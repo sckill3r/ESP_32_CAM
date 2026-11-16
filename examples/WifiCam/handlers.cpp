@@ -80,9 +80,10 @@ serveMjpeg() {
 void
 addRequestHandlers() {
   server.on("/", HTTP_GET, [] {
-    server.setContentLength(sizeof(FRONTPAGE));
+    static const size_t contentLength = strlen(FRONTPAGE);
+    server.setContentLength(contentLength);
     server.send(200, "text/html");
-    server.sendContent(FRONTPAGE, sizeof(FRONTPAGE));
+    server.sendContent(FRONTPAGE, contentLength);
   });
 
   server.on("/robots.txt", HTTP_GET,
@@ -93,7 +94,7 @@ addRequestHandlers() {
     for (const auto& r : esp32cam::Camera.listResolutions()) {
       b.println(r);
     }
-    server.send(200, "text/csv", b);
+    server.send(200, "text/csv", static_cast<const String&>(b));
   });
 
   server.on(UriBraces("/{}x{}.{}"), HTTP_GET, [] {
@@ -120,6 +121,7 @@ addRequestHandlers() {
     if (!esp32cam::Camera.changeResolution(r)) {
       Serial.printf("changeResolution(%ld,%ld) failure\n", width, height);
       server.send(500, "text/plain", "changeResolution error\n");
+      return;
     }
     Serial.printf("changeResolution(%ld,%ld) success\n", width, height);
 

@@ -1,5 +1,6 @@
 #include "WifiCam.hpp"
 #include <StreamString.h>
+#include <WiFi.h>
 #include <uri/UriBraces.h>
 
 static const char FRONTPAGE[] = R"EOT(

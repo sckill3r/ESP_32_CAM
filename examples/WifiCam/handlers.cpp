@@ -75,6 +75,9 @@ serveMjpeg() {
   auto startTime = millis();
   int nFrames = esp32cam::Camera.streamMjpeg(client);
   auto duration = millis() - startTime;
+  if (duration == 0) {
+    duration = 1;
+  }
   Serial.printf("MJPEG streaming end: %dfrm %0.2ffps\n", nFrames, 1000.0 * nFrames / duration);
 }
 
@@ -88,7 +91,7 @@ addRequestHandlers() {
   });
 
   server.on("/robots.txt", HTTP_GET,
-            [] { server.send(200, "text/html", "User-Agent: *\nDisallow: /\n"); });
+            [] { server.send(200, "text/plain", "User-Agent: *\nDisallow: /\n"); });
 
   server.on("/resolutions.csv", HTTP_GET, [] {
     StreamString b;
@@ -116,6 +119,11 @@ addRequestHandlers() {
       server.sendHeader("Location",
                         String("/") + r.getWidth() + "x" + r.getHeight() + "." + format);
       server.send(302);
+      return;
+    }
+    if (r > initialResolution) {
+      // frame buffers are sized for the initial resolution; a larger one cannot be captured
+      server.send(400, "text/plain", "resolution higher than initial resolution\n");
       return;
     }
 

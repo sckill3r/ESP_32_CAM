@@ -71,7 +71,9 @@ MjpegHeader::prepareResponseContentType() {
 
 void
 MjpegHeader::preparePartHeader(size_t contentLength) {
+  // Every part, including the first one, must be preceded by the boundary delimiter.
   size = snprintf(buf, sizeof(buf),
+                  "--" BOUNDARY "\r\n"
                   "Content-Type: image/jpeg\r\n"
                   "Content-Length: %zu\r\n"
                   "\r\n",
@@ -80,7 +82,7 @@ MjpegHeader::preparePartHeader(size_t contentLength) {
 
 void
 MjpegHeader::preparePartTrailer() {
-  size = snprintf(buf, sizeof(buf), "\r\n--" BOUNDARY "\r\n");
+  size = snprintf(buf, sizeof(buf), "\r\n");
 }
 
 size_t

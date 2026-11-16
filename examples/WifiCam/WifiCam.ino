@@ -12,6 +12,11 @@ void
 setup() {
   Serial.begin(115200);
   Serial.println();
+
+  // flash LED off at boot; it is turned on only while taking a JPG/BMP picture
+  pinMode(FLASH_LED_PIN, OUTPUT);
+  digitalWrite(FLASH_LED_PIN, LOW);
+
   delay(2000);
 
   WiFi.persistent(false);

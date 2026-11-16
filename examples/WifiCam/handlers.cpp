@@ -41,9 +41,26 @@ try {
 </script>
 )EOT";
 
+/**
+ * @brief Capture one frame with the flash LED on.
+ *
+ * The camera keeps capturing into its frame buffers in the background, so the first frame after
+ * turning the LED on may have been taken before the light came on. We wait for the auto exposure
+ * to adjust, throw away one stale frame, and then capture the real picture.
+ */
+static std::unique_ptr<esp32cam::Frame>
+captureWithFlash() {
+  digitalWrite(FLASH_LED_PIN, HIGH);
+  delay(FLASH_WARMUP_MS);
+  esp32cam::capture(); // discard stale frame; it is released immediately
+  auto frame = esp32cam::capture();
+  digitalWrite(FLASH_LED_PIN, LOW);
+  return frame;
+}
+
 static void
 serveStill(bool wantBmp) {
-  auto frame = esp32cam::capture();
+  auto frame = captureWithFlash();
   if (frame == nullptr) {
     Serial.println("capture() failure");
     server.send(500, "text/plain", "still capture error\n");
